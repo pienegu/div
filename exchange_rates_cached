@@ -1,29 +1,37 @@
-import json, os
-from datetime import datetime
-from exchange_rates import get_exchange_rates
-
 def exchange_rates(base_currency: str) -> dict:
+    """
+    Returns the most common exchange rates for a given base currency.
+
+    The downloaded rates are cached to a file. If the rates have already been downloaded today, they are read from the file. Otherwise, they are downloaded from the European Central Bank.
+    """
     def read_from_file():
+        # -- Read the cached rates from file
         with open(fr'.\download\exchange_rates_{base_currency}.json', 'r') as infile: 
             rates = json.load(infile)
         return rates
     
     def download():
         try:
+            # -- Download the rates from the European Central Bank
             rates = get_exchange_rates(base_currency)
+            # -- Save the rates to a file
             with open(fr'.\download\exchange_rates_{base_currency}.json', 'w') as outfile: 
                 json.dump(rates, outfile)
             return rates
         except:
+            # -- If download fails, read from file (even if older than today)
             return read_from_file()
     
     rates_file = fr'.\download\exchange_rates_{base_currency}.json'
 
+    # -- Check if the rates for the base currency have already been cached to file
     if os.path.exists(rates_file):
         today_date = datetime.today().strftime('%Y-%m-%d')
         file_time = os.path.getmtime(rates_file)
         file_time = datetime.fromtimestamp(file_time).strftime('%Y-%m-%d')
+        # -- If cached rates for the base currency have been updated today, return the cached rates
         if file_time == today_date:
             return read_from_file()
     
+    # -- If the rates have not been cached today, download them and return the downloaded rates
     return download()
