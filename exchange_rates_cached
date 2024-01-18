@@ -1,3 +1,7 @@
+import json, os
+from datetime import datetime
+from exchange_rates import get_exchange_rates
+
 def exchange_rates(base_currency: str) -> dict:
     """
     Returns the most common exchange rates for a given base currency.
