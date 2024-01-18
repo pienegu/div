@@ -1,0 +1,29 @@
+import json, os
+from datetime import datetime
+from exchange_rates import get_exchange_rates
+
+def exchange_rates(base_currency: str) -> dict:
+    def read_from_file():
+        with open(fr'.\download\exchange_rates_{base_currency}.json', 'r') as infile: 
+            rates = json.load(infile)
+        return rates
+    
+    def download():
+        try:
+            rates = get_exchange_rates(base_currency)
+            with open(fr'.\download\exchange_rates_{base_currency}.json', 'w') as outfile: 
+                json.dump(rates, outfile)
+            return rates
+        except:
+            return read_from_file()
+    
+    rates_file = fr'.\download\exchange_rates_{base_currency}.json'
+
+    if os.path.exists(rates_file):
+        today_date = datetime.today().strftime('%Y-%m-%d')
+        file_time = os.path.getmtime(rates_file)
+        file_time = datetime.fromtimestamp(file_time).strftime('%Y-%m-%d')
+        if file_time == today_date:
+            return read_from_file()
+    
+    return download()
